@@ -23,3 +23,6 @@ config.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Executable (upload via Releases instead)
+*.exe

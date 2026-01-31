@@ -21,7 +21,11 @@ except:
     pass
 
 
-from datetime import datetime
+from datetime import datetime, timezone
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo  # Python 3.8 이하 호환
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import yfinance as yf
@@ -657,7 +661,7 @@ class ExpandedWidget(QWidget):
 
         header.addWidget(title)
         
-        version = QLabel("v0.3")
+        version = QLabel("v0.3.1")
         version.setStyleSheet("font-size: 11px; color: #555; border: none; background: transparent; margin-left: 6px; margin-top: 3px;")
         header.addWidget(version)
         
@@ -948,10 +952,22 @@ class StockHeatmapApp:
             self.on_data_updated(self.stocks)
             return
         
-        # [US MARKET HOURS] 미국 정규장 시간 (KST 기준)
-        now = datetime.now()
-        is_market_hours = (now.hour >= 22) or (now.hour < 7)
-        print(f"[INFO] update_data 호출 - 시간: {now.strftime('%H:%M:%S')}, 장시간: {is_market_hours}, first_run: {self.first_run}")
+        # [US MARKET HOURS] 미국 동부 시간(ET) 기준으로 정규장 체크
+        try:
+            eastern = ZoneInfo('America/New_York')
+            now_et = datetime.now(eastern)
+        except:
+            # Fallback: UTC에서 5시간 빼기 (EST 근사값)
+            now_et = datetime.now(timezone.utc).replace(tzinfo=None)
+            now_et = now_et.replace(hour=(now_et.hour - 5) % 24)
+        
+        # 미국 정규장: 월~금 09:30~16:00 ET
+        is_weekday = now_et.weekday() < 5  # 0=월, 4=금
+        is_market_hours = is_weekday and (
+            (now_et.hour == 9 and now_et.minute >= 30) or
+            (10 <= now_et.hour < 16)
+        )
+        print(f"[INFO] update_data 호출 - 시간(ET): {now_et.strftime('%H:%M:%S')}, 장시간: {is_market_hours}, first_run: {self.first_run}")
         
         if self.first_run or is_market_hours:
             self.fetcher = DataFetcher(self.stocks)

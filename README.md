@@ -34,10 +34,6 @@ Data may be delayed 15-20 minutes and should not be used as investment advice.
 - Some tickers may occasionally fail to fetch data due to yfinance API instability
 - If a stock appears gray, data was temporarily unavailable (cached values are used when possible)
 
-## Support
-
-If you find this useful, consider supporting on [Ko-fi](https://ko-fi.com/menglda)
-
 ## License
 
 MIT

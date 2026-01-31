@@ -47,9 +47,12 @@ import stocks_data
 
 # EXE 실행 시 실행 파일 위치, 소스 실행 시 스크립트 위치
 if getattr(sys, 'frozen', False):
-    CONFIG_FILE = Path(sys.executable).parent / "config.json"
+    BASE_PATH = Path(sys.executable).parent
 else:
-    CONFIG_FILE = Path(__file__).parent / "config.json"
+    BASE_PATH = Path(__file__).parent
+
+CONFIG_FILE = BASE_PATH / "config.json"
+ICON_FILE = BASE_PATH / "icon.ico"
 
 # 기본 스톡 데이터가 없을 경우 stocks_data에서 가져옴
 DEFAULT_STOCKS = stocks_data.STOCKS
@@ -500,9 +503,8 @@ class ExpandedWidget(QWidget):
         # 회색 모서리 잔상 제거를 위해 TranslucentBackground 복구
         self.setAttribute(Qt.WA_TranslucentBackground, True)
         # 윈도우 아이콘 설정
-        icon_path = Path(__file__).parent / "icon.ico"
-        if icon_path.exists():
-            self.setWindowIcon(QIcon(str(icon_path)))
+        if ICON_FILE.exists():
+            self.setWindowIcon(QIcon(str(ICON_FILE)))
 
         
         self.main_frame = QFrame(self)
@@ -661,7 +663,7 @@ class ExpandedWidget(QWidget):
 
         header.addWidget(title)
         
-        version = QLabel("v0.3.1")
+        version = QLabel("v0.3.2")
         version.setStyleSheet("font-size: 11px; color: #555; border: none; background: transparent; margin-left: 6px; margin-top: 3px;")
         header.addWidget(version)
         
@@ -902,9 +904,8 @@ class StockHeatmapApp:
         self.app.setQuitOnLastWindowClosed(False)
         self.app.setFont(QFont("Segoe UI", 10))
         # 앱 전체 아이콘 설정 (작업표시줄 아이콘)
-        icon_path = Path(__file__).parent / "icon.ico"
-        if icon_path.exists():
-            self.app.setWindowIcon(QIcon(str(icon_path)))
+        if ICON_FILE.exists():
+            self.app.setWindowIcon(QIcon(str(ICON_FILE)))
 
         
         self.config = self.load_config()
